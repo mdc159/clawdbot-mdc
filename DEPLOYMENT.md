@@ -62,7 +62,7 @@ OpenClaw runs as a **Docker container** with persistent config mounted from the 
 ### Full Rebuild + Restart (one-liner)
 
 ```bash
-cd /home/ubuntu/clawdbot-mdc && git fetch upstream && git merge upstream/main --no-edit && docker build -t moltbot:latest . && docker stop moltbot && docker rm moltbot && docker run -d --name moltbot -p 18789:18789 -v /home/ubuntu/moltbot-data:/home/node/.openclaw moltbot:latest node dist/index.js gateway --bind lan --port 18789
+cd /home/ubuntu/clawdbot-mdc && git fetch upstream && git rebase upstream/main && docker build -t moltbot:latest . && docker stop moltbot && docker rm moltbot && docker run -d --name moltbot -p 18789:18789 -v /home/ubuntu/moltbot-data:/home/node/.openclaw moltbot:latest node dist/index.js gateway --bind lan --port 18789
 ```
 
 ### Run Onboarding
@@ -144,7 +144,10 @@ cd /home/ubuntu/clawdbot-mdc
 
 # Sync with upstream (moltbot/moltbot)
 git fetch upstream
-git merge upstream/main --no-edit
+git rebase upstream/main
+# If you hit conflicts: fix them, then `git rebase --continue`.
+# Optional: push your rebased commit(s) back to the fork.
+# git push origin main
 
 # Rebuild Docker image
 docker build -t moltbot:latest .
@@ -231,7 +234,7 @@ docker restart moltbot
 - Verify token in config: `cat /home/ubuntu/moltbot-data/openclaw.json`
 
 **Build fails with TypeScript errors**
-- Sync with upstream: `git fetch upstream && git merge upstream/main`
+- Sync with upstream: `git fetch upstream && git rebase upstream/main`
 
 ## Git Remotes
 
@@ -243,7 +246,7 @@ upstream  https://github.com/moltbot/moltbot.git       # Main repo (OpenClaw)
 To sync with upstream:
 ```bash
 git fetch upstream
-git merge upstream/main --no-edit
+git rebase upstream/main
 git push origin main  # Optional: push to your fork
 ```
 
