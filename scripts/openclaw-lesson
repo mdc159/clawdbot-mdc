@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+#
+# openclaw-lesson - Add a lesson learned to DEPLOYMENT.md
+#
+# Usage:
+#   openclaw-lesson "Issue description" "Resolution" ["Additional notes"]
+#
+# Examples:
+#   openclaw-lesson "Gateway won't start" "Port was in use, used --force flag"
+#   openclaw-lesson "Config validation failed" "Use CLI instead of editing JSON" "openclaw config set is safer"
+#
+
+set -euo pipefail
+
+# Resolve symlinks to find actual script location
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+while [[ -L "$SCRIPT_PATH" ]]; do
+    SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+    SCRIPT_PATH="$(readlink "$SCRIPT_PATH")"
+    [[ "$SCRIPT_PATH" != /* ]] && SCRIPT_PATH="$SCRIPT_DIR/$SCRIPT_PATH"
+done
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+DEPLOYMENT_DOC="$REPO_ROOT/docs/DEPLOYMENT.md"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m' # No Color
+
+usage() {
+    echo "Usage: openclaw-lesson \"Issue\" \"Resolution\" [\"Notes\"]"
+    echo ""
+    echo "Add a lesson learned to the DEPLOYMENT.md document."
+    echo ""
+    echo "Arguments:"
+    echo "  Issue       - Brief description of the issue encountered"
+    echo "  Resolution  - How the issue was resolved"
+    echo "  Notes       - Optional additional context"
+    echo ""
+    echo "Examples:"
+    echo "  openclaw-lesson \"Gateway timeout\" \"Increased timeout to 60s\""
+    echo "  openclaw-lesson \"API rate limit\" \"Added retry logic\" \"Use exponential backoff\""
+}
+
+if [[ $# -lt 2 ]]; then
+    echo -e "${RED}Error: Missing required arguments${NC}"
+    echo ""
+    usage
+    exit 1
+fi
+
+ISSUE="$1"
+RESOLUTION="$2"
+NOTES="${3:-}"
+DATE=$(date +%Y-%m-%d)
+
+# Check if DEPLOYMENT.md exists
+if [[ ! -f "$DEPLOYMENT_DOC" ]]; then
+    echo -e "${RED}Error: DEPLOYMENT.md not found at $DEPLOYMENT_DOC${NC}"
+    exit 1
+fi
+
+# Find the lessons learned table and add a new row
+# The table format is: | Date | Issue | Resolution | Notes |
+
+# Create the new row
+if [[ -n "$NOTES" ]]; then
+    NEW_ROW="| $DATE | $ISSUE | $RESOLUTION | $NOTES |"
+else
+    NEW_ROW="| $DATE | $ISSUE | $RESOLUTION | |"
+fi
+
+# Find the line after the table header separator and insert there
+# Table header looks like: |------|-------|------------|-------|
+
+if grep -q "### Installation Insights" "$DEPLOYMENT_DOC"; then
+    # Use awk to insert the new row after the table header separator
+    awk -v new_row="$NEW_ROW" '
+    /\| Date \| Issue \| Resolution \| Notes \|/ {
+        print
+        getline  # Get the separator line
+        print
+        print new_row
+        next
+    }
+    { print }
+    ' "$DEPLOYMENT_DOC" > "$DEPLOYMENT_DOC.tmp" && mv "$DEPLOYMENT_DOC.tmp" "$DEPLOYMENT_DOC"
+
+    echo -e "${GREEN}Added lesson learned:${NC}"
+    echo "  Date: $DATE"
+    echo "  Issue: $ISSUE"
+    echo "  Resolution: $RESOLUTION"
+    [[ -n "$NOTES" ]] && echo "  Notes: $NOTES"
+    echo ""
+    echo -e "${YELLOW}Don't forget to commit the changes:${NC}"
+    echo "  git add docs/DEPLOYMENT.md && git commit -m \"docs: add deployment lesson - $ISSUE\""
+else
+    echo -e "${RED}Error: Could not find lessons learned table in DEPLOYMENT.md${NC}"
+    echo "Please add the lesson manually."
+    exit 1
+fi
