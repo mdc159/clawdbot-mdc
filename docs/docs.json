@@ -1321,6 +1321,7 @@
               {
                 "group": "Technical reference",
                 "pages": [
+                  "reference/repo-map",
                   "reference/wizard",
                   "reference/token-use",
                   "reference/secretref-credential-surface",

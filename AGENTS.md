@@ -165,7 +165,9 @@
 ## Agent-Specific Notes
 
 - Vocabulary: "makeup" = "mac app".
+- Codex reads `AGENTS.md` as the canonical repo-level instruction file in this workspace. Keep shared agent instructions here unless a narrower nested `AGENTS.md` is needed.
 - Never edit `node_modules` (global/Homebrew/npm/git installs too). Updates overwrite. Skill notes go in `tools.md` or `AGENTS.md`.
+- `CLAUDE.md` is the Claude-facing compatibility alias for the same instructions.
 - When adding a new `AGENTS.md` anywhere in the repo, also add a `CLAUDE.md` symlink pointing to it (example: `ln -s AGENTS.md CLAUDE.md`).
 - Signal: "update fly" => `fly ssh console -a flawd-bot -C "bash -lc 'cd /data/clawd/openclaw && git pull --rebase origin main'"` then `fly machines restart e825232f34d058 -a flawd-bot`.
 - When working on a GitHub Issue or PR, print the full URL at the end of the task.
