@@ -1275,7 +1275,12 @@
               },
               {
                 "group": "Technical reference",
-                "pages": ["reference/wizard", "reference/token-use", "reference/prompt-caching"]
+                "pages": [
+                  "reference/repo-map",
+                  "reference/wizard",
+                  "reference/token-use",
+                  "reference/prompt-caching"
+                ]
               },
               {
                 "group": "Concept internals",
